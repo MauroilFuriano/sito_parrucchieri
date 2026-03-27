@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Visual Studio Code</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1e1e1e;
+  color: #abb2bf;
+  font-family: 'Consolas', 'Courier New', monospace;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+}
+
+/* ─── TITLEBAR ─── */
+.titlebar {
+  height: 30px;
+  background: #3c3c3c;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  flex-shrink: 0;
+  -webkit-app-region: drag;
+}
+.dots { display: flex; gap: 7px; margin-right: 12px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
+.dot.r { background: #ff5f57; }
+.dot.y { background: #febc2e; }
+.dot.g { background: #28c840; }
+.title-text {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #cccccc;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ─── MENU BAR ─── */
+.menubar {
+  height: 24px;
+  background: #3c3c3c;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 4px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #252526;
+}
+.menu-item {
+  font-size: 12px;
+  color: #cccccc;
+  font-family: -apple-system, sans-serif;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.menu-item:hover { background: #505050; }
+
+/* ─── MAIN LAYOUT ─── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── ACTIVITY BAR ─── */
+.activitybar {
+  width: 48px;
+  background: #333333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 6px;
+  gap: 4px;
+  flex-shrink: 0;
+  border-right: 1px solid #252526;
+}
+.act-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #858585;
+  font-size: 20px;
+  position: relative;
+}
+.act-icon:hover { color: #cccccc; }
+.act-icon.active {
+  color: #cccccc;
+  border-left: 2px solid #007acc;
+  margin-left: -2px;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 210px;
+  background: #252526;
+  flex-shrink: 0;
+  border-right: 1px solid #1e1e1e;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #bbbbbb;
+  padding: 10px 20px 6px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-family: -apple-system, sans-serif;
+  flex-shrink: 0;
+}
+.file-tree { padding: 2px 0; overflow-y: auto; flex: 1; }
+.tree-row {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: #cccccc;
+  font-family: -apple-system, sans-serif;
+  gap: 4px;
+}
+.tree-row:hover { background: #2a2d2e; }
+.tree-row.active { background: #094771; }
+.tree-row.indent1 { padding-left: 16px; }
+.tree-row.indent2 { padding-left: 28px; }
+.tree-row.indent3 { padding-left: 40px; }
+.tree-icon { font-size: 13px; flex-shrink: 0; }
+.tree-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ─── EDITOR AREA ─── */
+.editor-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  overflow: hidden;
+}
+
+/* ─── TABS ─── */
+.tab-bar {
+  height: 35px;
+  background: #2d2d2d;
+  display: flex;
+  align-items: flex-end;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.tab {
+  height: 35px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #969696;
+  background: #2d2d2d;
+  border-right: 1px solid #252526;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: -apple-system, sans-serif;
+  flex-shrink: 0;
+}
+.tab.active {
+  background: #1e1e1e;
+  color: #cccccc;
+  border-top: 1px solid #007acc;
+  border-bottom: none;
+}
+.tab-icon { font-size: 14px; }
+.tab-close { color: #969696; font-size: 16px; margin-left: 4px; }
+.tab-close:hover { color: #cccccc; }
+
+/* ─── BREADCRUMB ─── */
+.breadcrumb {
+  height: 22px;
+  background: #1e1e1e;
+  border-bottom: 1px solid #2d2d2d;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  font-size: 12px;
+  color: #969696;
+  gap: 5px;
+  flex-shrink: 0;
+  font-family: -apple-system, sans-serif;
+}
+.bc-arrow { color: #555; }
+.bc-current { color: #cccccc; }
+
+/* ─── CODE EDITOR ─── */
+.editor-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding: 8px 0;
+}
+.line-numbers {
+  width: 52px;
+  text-align: right;
+  padding: 0 16px 0 0;
+  color: #4e5568;
+  font-size: 14px;
+  line-height: 22px;
+  user-select: none;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.code-scroll {
+  flex: 1;
+  overflow: auto;
+  padding-right: 40px;
+}
+.code-line {
+  height: 22px;
+  line-height: 22px;
+  font-size: 14px;
+  white-space: pre;
+  position: relative;
+}
+
+/* ─── CURSOR ─── */
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  background: #aeafad;
+  vertical-align: text-bottom;
+  margin-bottom: 1px;
+  animation: blink 1.1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── GHOST TEXT ─── */
+.ghost { color: #545454; }
+
+/* ─── STATUS BAR ─── */
+.statusbar {
+  height: 22px;
+  background: #007acc;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 14px;
+  font-size: 12px;
+  color: #ffffff;
+  flex-shrink: 0;
+  font-family: -apple-system, sans-serif;
+}
+.sb-sep { flex: 1; }
+.sb-item { cursor: pointer; padding: 0 4px; }
+.sb-item:hover { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+/* ─── OVERLAY ─── */
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  gap: 20px;
+}
+#overlay.hidden { display: none; }
+.overlay-title {
+  color: #cccccc;
+  font-size: 22px;
+  font-family: -apple-system, sans-serif;
+  font-weight: 300;
+}
+.overlay-badge {
+  background: #2d2d2d;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 10px 28px;
+  color: #abb2bf;
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+.overlay-hint {
+  color: #555;
+  font-size: 13px;
+  font-family: -apple-system, sans-serif;
+}
+</style>
+</head>
+<body>
+
+<!-- ─── OVERLAY ─── -->
+<div id="overlay">
+  <div class="overlay-title">VS Code — Pronto per la ripresa</div>
+  <div class="overlay-badge">PREMI SPAZIO per iniziare</div>
+  <div class="overlay-hint">R = reset per un nuovo ciak</div>
+</div>
+
+<!-- ─── TITLEBAR ─── -->
+<div class="titlebar">
+  <div class="dots">
+    <div class="dot r"></div>
+    <div class="dot y"></div>
+    <div class="dot g"></div>
+  </div>
+  <div class="title-text">ProductCard.tsx — ecommerce-shop — Visual Studio Code</div>
+</div>
+
+<!-- ─── MENU BAR ─── -->
+<div class="menubar">
+  <div class="menu-item">File</div>
+  <div class="menu-item">Edit</div>
+  <div class="menu-item">Selection</div>
+  <div class="menu-item">View</div>
+  <div class="menu-item">Go</div>
+  <div class="menu-item">Run</div>
+  <div class="menu-item">Terminal</div>
+  <div class="menu-item">Help</div>
+</div>
+
+<!-- ─── MAIN ─── -->
+<div class="main">
+
+  <!-- Activity bar -->
+  <div class="activitybar">
+    <div class="act-icon active" title="Explorer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 7h6l2 2h10v11H3z"/>
+      </svg>
+    </div>
+    <div class="act-icon" title="Search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </div>
+    <div class="act-icon" title="Source Control">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/>
+        <path d="M6 8v8M6 8a6 6 0 0 0 12 0"/>
+      </svg>
+    </div>
+    <div class="act-icon" title="Extensions">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">Explorer</div>
+    <div class="file-tree">
+      <div class="tree-row">
+        <span class="tree-icon">▾</span>
+        <span class="tree-label" style="font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:0.5px">ECOMMERCE-SHOP</span>
+      </div>
+      <div class="tree-row indent1">
+        <span class="tree-icon">▾</span>
+        <span class="tree-label">src</span>
+      </div>
+      <div class="tree-row indent2">
+        <span class="tree-icon">▾</span>
+        <span class="tree-label">components</span>
+      </div>
+      <div class="tree-row indent3 active">
+        <span class="tree-icon" style="color:#4ec9b0">⬡</span>
+        <span class="tree-label">ProductCard.tsx</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#4ec9b0">⬡</span>
+        <span class="tree-label">Navbar.tsx</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#4ec9b0">⬡</span>
+        <span class="tree-label">CartItem.tsx</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#4ec9b0">⬡</span>
+        <span class="tree-label">Footer.tsx</span>
+      </div>
+      <div class="tree-row indent2">
+        <span class="tree-icon">▾</span>
+        <span class="tree-label">lib</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#ccb06c">⬡</span>
+        <span class="tree-label">utils.ts</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#ccb06c">⬡</span>
+        <span class="tree-label">api.ts</span>
+      </div>
+      <div class="tree-row indent2">
+        <span class="tree-icon">▾</span>
+        <span class="tree-label">app</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#4ec9b0">⬡</span>
+        <span class="tree-label">page.tsx</span>
+      </div>
+      <div class="tree-row indent3">
+        <span class="tree-icon" style="color:#4ec9b0">⬡</span>
+        <span class="tree-label">layout.tsx</span>
+      </div>
+      <div class="tree-row indent1">
+        <span class="tree-icon">▸</span>
+        <span class="tree-label">public</span>
+      </div>
+      <div class="tree-row indent1">
+        <span class="tree-icon" style="color:#969696">⬡</span>
+        <span class="tree-label">package.json</span>
+      </div>
+      <div class="tree-row indent1">
+        <span class="tree-icon" style="color:#969696">⬡</span>
+        <span class="tree-label">next.config.ts</span>
+      </div>
+      <div class="tree-row indent1">
+        <span class="tree-icon" style="color:#969696">⬡</span>
+        <span class="tree-label">tailwind.config.ts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor area -->
+  <div class="editor-area">
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <div class="tab active">
+        <span class="tab-icon" style="color:#4ec9b0">⬡</span>
+        ProductCard.tsx
+        <span class="tab-close">×</span>
+      </div>
+      <div class="tab">
+        <span class="tab-icon" style="color:#ccb06c">⬡</span>
+        utils.ts
+        <span class="tab-close">×</span>
+      </div>
+      <div class="tab">
+        <span class="tab-icon" style="color:#4ec9b0">⬡</span>
+        layout.tsx
+        <span class="tab-close">×</span>
+      </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <span>src</span>
+      <span class="bc-arrow">›</span>
+      <span>components</span>
+      <span class="bc-arrow">›</span>
+      <span class="bc-current">ProductCard.tsx</span>
+    </div>
+
+    <!-- Code body -->
+    <div class="editor-body">
+      <div class="line-numbers" id="lineNumbers">1</div>
+      <div class="code-scroll">
+        <div id="codeArea"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── STATUS BAR ─── -->
+<div class="statusbar">
+  <div class="sb-item">⎇ main</div>
+  <div class="sb-item">✓ 0</div>
+  <div class="sb-sep"></div>
+  <div class="sb-item" id="sbPos">Ln 1, Col 1</div>
+  <div class="sb-item">UTF-8</div>
+  <div class="sb-item">LF</div>
+  <div class="sb-item">TypeScript JSX</div>
+  <div class="sb-item">Prettier</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  COLORS  (One Dark Pro)
+// ─────────────────────────────────────────────
+const C = {
+  kw:    '#c678dd',  // keyword: import export default function return interface type
+  str:   '#98c379',  // strings
+  typ:   '#e5c07b',  // types: string number boolean React
+  fn:    '#61afef',  // function / component names
+  prop:  '#e06c75',  // object props / jsx tag names
+  attr:  '#d19a66',  // jsx attributes
+  num:   '#d19a66',  // numbers
+  plain: '#abb2bf',  // default
+  cmt:   '#5c6370',  // comments
+};
+
+// ─────────────────────────────────────────────
+//  TOKEN SEQUENCE
+//  Each entry: [text, color, pauseAfterMs?]
+//  '\n' = newline (pauseAfter = inter-line delay)
+// ─────────────────────────────────────────────
+const SEQ = [
+  // ── imports
+  ['import',C.kw],[' ',C.plain],['React',C.typ],[' from ',C.plain],["'react'",C.str],
+  ['\n',C.plain,220],
+  ['import',C.kw],[' type ',C.plain],['{ FC }',C.plain],[' from ',C.plain],["'react'",C.str],
+  ['\n',C.plain,210],
+  ['import',C.kw],[' Image ',C.plain],['from',C.kw],[" 'next/image'",C.str],
+  ['\n',C.plain,240],
+  ['import',C.kw],[' Link ',C.plain],['from',C.kw],[" 'next/link'",C.str],
+  ['\n',C.plain,460],  // pausa "pensiero"
+
+  // ── empty line
+  ['\n',C.plain,140],
+
+  // ── interface
+  ['interface',C.kw],[' ProductCardProps ',C.typ],['{',C.plain],
+  ['\n',C.plain,170],
+  ['  id',C.prop],[': ',C.plain],['string',C.typ],
+  ['\n',C.plain,150],
+  ['  name',C.prop],[': ',C.plain],['string',C.typ],
+  ['\n',C.plain,150],
+  ['  price',C.prop],[': ',C.plain],['number',C.typ],
+  ['\n',C.plain,150],
+  ['  image',C.prop],[': ',C.plain],['string',C.typ],
+  ['\n',C.plain,150],
+  ['  slug',C.prop],[': ',C.plain],['string',C.typ],
+  ['\n',C.plain,200],
+  ['}',C.plain],
+  ['\n',C.plain,520],  // pausa "pensiero"
+
+  // ── empty line
+  ['\n',C.plain,120],
+
+  // ── component
+  ['export',C.kw],[' ',C.plain],['default',C.kw],[' ',C.plain],['function',C.kw],
+  [' ',C.plain],['ProductCard',C.fn],
+  ['(',C.plain],['{ ',C.plain],
+  ['id',C.prop],[', ',C.plain],['name',C.prop],[', ',C.plain],
+  ['price',C.prop],[', ',C.plain],['image',C.prop],[', ',C.plain],['slug',C.prop],
+  [' }: ',C.plain],['ProductCardProps',C.typ],[') {',C.plain],
+  ['\n',C.plain,200],
+
+  // ── return
+  ['  return (',C.plain],
+  ['\n',C.plain,180],
+
+  // ── JSX
+  ['    <',C.prop],['Link',C.prop],[' ',C.plain],['href',C.attr],['={`/shop/',C.str],['${',C.plain],['slug',C.prop],['}`} ',C.str],
+  ['className',C.attr],['=',C.plain],['"product-card"',C.str],['>',C.plain],
+  ['\n',C.plain,170],
+
+  ['      <',C.prop],['Image',C.prop],[' ',C.plain],
+  ['src',C.attr],['={',C.plain],['image',C.prop],['} ',C.plain],
+  ['alt',C.attr],['={',C.plain],['name',C.prop],['} ',C.plain],
+  ['width',C.attr],['={',C.plain],['400',C.num],['} ',C.plain],
+  ['height',C.attr],['={',C.plain],['400',C.num],['} ',C.plain],['/> ',C.plain],
+  ['\n',C.plain,160],
+
+  ['      <h3>',C.plain],['{',C.plain],['name',C.prop],['}',C.plain],['</h3>',C.plain],
+  ['\n',C.plain,150],
+
+  ['      <p>',C.plain],['{',C.plain],['formatPrice',C.fn],['(',C.plain],['price',C.prop],[')',C.plain],['}',C.plain],['</p>',C.plain],
+  ['\n',C.plain,160],
+
+  ['    </Link>',C.prop],
+];
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+// lines: array of arrays of {text, color}
+let lines    = [[]];
+let started  = false;
+let seqIdx   = 0;
+let tokChIdx = 0;
+let colNum   = 1;
+
+const codeArea    = document.getElementById('codeArea');
+const lineNumbers = document.getElementById('lineNumbers');
+const sbPos       = document.getElementById('sbPos');
+
+// ─────────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────────
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function tokensToHTML(tokens) {
+  return tokens.map(t => `<span style="color:${t.color}">${esc(t.text)}</span>`).join('');
+}
+
+// Initial render: create one line div
+function initDOM() {
+  codeArea.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'code-line';
+  d.innerHTML = '<span class="cursor"></span>';
+  codeArea.appendChild(d);
+  lineNumbers.innerHTML = '1';
+}
+
+// Called when we add a char to the current (last) line
+function updateCurrentLineDOM() {
+  const div = codeArea.lastElementChild;
+  const lastLine = lines[lines.length - 1];
+  div.innerHTML = tokensToHTML(lastLine) + '<span class="cursor"></span>';
+  sbPos.textContent = `Ln ${lines.length}, Col ${colNum}`;
+}
+
+// Called when we press Enter: finalise last line div, add new one
+function addNewLineDOM() {
+  // Freeze current line (remove cursor span already gone)
+  const oldDiv = codeArea.lastElementChild;
+  const lastLine = lines[lines.length - 1];
+  oldDiv.innerHTML = tokensToHTML(lastLine);
+
+  // Push new empty line
+  lines.push([]);
+
+  const newDiv = document.createElement('div');
+  newDiv.className = 'code-line';
+  newDiv.innerHTML = '<span class="cursor"></span>';
+  codeArea.appendChild(newDiv);
+
+  // Scroll to bottom
+  codeArea.parentElement.scrollTop = codeArea.scrollHeight;
+
+  // Update line numbers
+  lineNumbers.innerHTML = lines.map((_,i) => i+1).join('<br>');
+  sbPos.textContent = `Ln ${lines.length}, Col 1`;
+}
+
+// ─────────────────────────────────────────────
+//  APPEND CHAR TO CURRENT LINE
+// ─────────────────────────────────────────────
+function appendChar(char, color) {
+  const line = lines[lines.length - 1];
+  const last = line[line.length - 1];
+  if (last && last.color === color) {
+    last.text += char;
+  } else {
+    line.push({ text: char, color });
+  }
+  colNum++;
+}
+
+// ─────────────────────────────────────────────
+//  TYPING ENGINE
+// ─────────────────────────────────────────────
+function rnd(base, spread) {
+  return base + (Math.random() * spread * 2 - spread);
+}
+
+function typeNext() {
+  if (seqIdx >= SEQ.length) return; // done
+
+  const tok = SEQ[seqIdx];
+  const text = tok[0], color = tok[1], pauseAfter = tok[2];
+
+  if (tokChIdx >= text.length) {
+    seqIdx++;
+    tokChIdx = 0;
+    setTimeout(typeNext, pauseAfter != null ? pauseAfter : rnd(28,12));
+    return;
+  }
+
+  const ch = text[tokChIdx];
+
+  if (ch === '\n') {
+    colNum = 1;
+    addNewLineDOM();
+    tokChIdx++;
+    const pause = pauseAfter != null ? pauseAfter : rnd(190, 55);
+    setTimeout(typeNext, pause);
+    return;
+  }
+
+  appendChar(ch, color);
+  updateCurrentLineDOM();
+  tokChIdx++;
+
+  // Typing speed: slightly slower on special chars, faster on runs
+  let delay;
+  if (' (){}[]<>'.includes(ch)) {
+    delay = rnd(52, 18);
+  } else {
+    delay = rnd(38, 16);
+  }
+  setTimeout(typeNext, delay);
+}
+
+// ─────────────────────────────────────────────
+//  RESET
+// ─────────────────────────────────────────────
+function reset() {
+  lines    = [[]];
+  seqIdx   = 0;
+  tokChIdx = 0;
+  colNum   = 1;
+  started  = false;
+  initDOM();
+  document.getElementById('overlay').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────
+//  INIT & CONTROLS
+// ─────────────────────────────────────────────
+initDOM();
+
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space' && !started) {
+    e.preventDefault();
+    started = true;
+    document.getElementById('overlay').classList.add('hidden');
+    setTimeout(typeNext, 400);
+  }
+  if (e.code === 'KeyR') {
+    reset();
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* ============================================
+   PINK & BLUE — Design System CSS
+   Versione: 2.0 (Migliorie 2026)
+   ============================================ */
+
+/* --- Utilities glassmorphism per navbar, card, chatbot --- */
+@layer utilities {
+    .glassmorphism {
+        @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-lg dark:bg-[#1f1f1f]/80 dark:border-white/10;
+    }
+
+    .glassmorphism-dark {
+        @apply bg-[#1a1a1a]/80 backdrop-blur-md border border-white/10 shadow-xl;
+    }
+}
+
+/* --- Scrollbar personalizzata (chat) --- */
+.chat-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: #D4AF37;
+    border-radius: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+    background: #C5A880;
+}
+
+/* --- Hero Background con overlay scuro ---
+   NOTA: L'immagine viene ora servita dalla cartella public locale.
+   Il parallax è gestito via JS (translateY sul background-position). */
+.hero-bg {
+    background-image: linear-gradient(to right, rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.4)), url('/hero_image.png?v=5');
+    background-size: cover;
+    background-position: center;
+    /* Rimosso background-attachment: fixed per compatibilità mobile e parallax JS */
+}
+
+/* ============================================
+   ANIMAZIONI DI SCROLL REVEAL (trend 2026)
+   Varianti direzionali per un ingresso più dinamico.
+   ============================================ */
+
+/* Reveal standard (dal basso) */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Reveal da sinistra (per card Donna nei servizi) */
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal-left.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Reveal da destra (per card Uomo nei servizi) */
+.reveal-right {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal-right.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Reveal con scala (per card promozioni) */
+.reveal-scale {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal-scale.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+
+
+/* --- Overlay sfumato sulle immagini del lookbook al hover --- */
+.lookbook-overlay {
+    position: relative;
+}
+
+.lookbook-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26, 26, 26, 0.8), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.lookbook-overlay:hover::after {
+    opacity: 1;
+}
+
+/* ============================================
+   CAROSELLO TESTIMONIAL (auto-scroll)
+   ============================================ */
+.testimonial-track {
+    display: flex;
+    gap: 1.5rem;
+    animation: testimonial-scroll 30s linear infinite;
+}
+
+.testimonial-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes testimonial-scroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* --- Fix autofill browser (mantiene sfondo bianco nei form) --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+}
