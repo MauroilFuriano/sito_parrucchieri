@@ -170,11 +170,14 @@ async function getBotResponse(input) {
 
         if (dateToCheck) {
             try {
-                const res = await fetch(`/api/availability?date=${dateToCheck}`);
-                const data = await res.json();
-                if (data.availableSlots && data.availableSlots.length > 0) {
-                    const slots = data.availableSlots.slice(0, 3).join(', ');
-                    const more = data.availableSlots.length > 3 ? ' e altri...' : '';
+                const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+                const bookedTimes = allAppointments.filter(app => app.date === dateToCheck).map(app => app.time);
+                const allSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+                const availableSlots = allSlots.filter(s => !bookedTimes.includes(s));
+                
+                if (availableSlots.length > 0) {
+                    const slots = availableSlots.slice(0, 3).join(', ');
+                    const more = availableSlots.length > 3 ? ' e altri...' : '';
                     return `Sì, per ${text.includes('oggi') ? 'oggi' : 'domani'} abbiamo disponibilità! Alcuni orari liberi: <b>${slots}${more}</b>.<br>Vuoi prenotare?` + bookBtn('');
                 } else {
                     return `Mi dispiace, per ${text.includes('oggi') ? 'oggi' : 'domani'} siamo al completo. Vuoi controllare un'altra data?` + checkAvailBtn();
@@ -285,8 +288,8 @@ if (bookingDate) {
         bookingTime.innerHTML = '<option value="">Caricamento orari...</option>';
 
         try {
-            const res = await fetch(`/api/availability?date=${date}`);
-            const data = await res.json();
+            const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+            const bookedTimes = allAppointments.filter(app => app.date === date).map(app => app.time);
 
             const allSlots = [
                 '09:00', '10:00', '11:00', '12:00',
@@ -297,7 +300,7 @@ if (bookingDate) {
             let availableCount = 0;
 
             allSlots.forEach(slot => {
-                const isAvailable = data.availableSlots && data.availableSlots.includes(slot);
+                const isAvailable = !bookedTimes.includes(slot);
                 const option = document.createElement('option');
                 option.value = slot;
 
@@ -346,7 +349,6 @@ if (bookingForm) {
 
         const payload = {
             name: document.getElementById('booking-name').value,
-            email: document.getElementById('booking-email').value,
             phone: document.getElementById('booking-phone').value,
             service: document.getElementById('booking-service').value,
             date: bookingDate.value,
@@ -354,82 +356,68 @@ if (bookingForm) {
         };
 
         try {
-            const res = await fetch('/api/appointments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
+            const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+            const isBooked = allAppointments.some(app => app.date === payload.date && app.time === payload.time);
+            
+            if (isBooked) throw new Error("Orario già prenotato");
+            
+            allAppointments.push({ ...payload, id: Date.now() });
+            localStorage.setItem('appointments', JSON.stringify(allAppointments));
+
+            await new Promise(r => setTimeout(r, 600)); // Simula caricamento
 
             submitSpinner.style.display = 'none';
 
-            if (res.ok) {
-                // Success state
-                isSuccess = true;
-                submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                submitBtn.classList.remove('bg-carbone', 'hover:bg-oro');
+            // Success state
+            isSuccess = true;
+            submitBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            submitBtn.classList.remove('bg-carbone', 'hover:bg-oro');
 
-                messageContainer.classList.add('bg-green-50', 'border-green-200', 'text-green-800');
-                messageIcon.setAttribute('data-lucide', 'check-circle-2');
-                messageIcon.classList.add('text-green-500');
-                messageIcon.classList.remove('text-red-500');
-                bookingMessage.innerHTML = '<b>Prenotazione confermata!</b><br>Ti aspettiamo in salone. Riceverai presto un promemoria.';
+            messageContainer.classList.add('bg-green-50', 'border-green-200', 'text-green-800');
+            messageIcon.setAttribute('data-lucide', 'check-circle-2');
+            messageIcon.classList.add('text-green-500');
+            messageIcon.classList.remove('text-red-500');
+            bookingMessage.innerHTML = '<b>Prenotazione confermata!</b><br>Ti aspettiamo in salone. Riceverai presto un promemoria.';
 
-                bookingForm.reset();
-                bookingTime.disabled = true;
-                bookingTime.innerHTML = '<option value="">Seleziona prima una data</option>';
+            bookingForm.reset();
+            bookingTime.disabled = true;
+            bookingTime.innerHTML = '<option value="">Seleziona prima una data</option>';
 
-                // Reset button e messaggio dopo 4 secondi
+            // Reset button e messaggio dopo 4 secondi
+            setTimeout(() => {
+                const checkIcon = document.getElementById('booking-submit-check');
+                const textSpan = document.getElementById('booking-submit-text');
+                const btn = document.getElementById('booking-submit');
+
+                if (checkIcon) checkIcon.style.display = 'none';
+                if (textSpan) textSpan.style.opacity = '1';
+
+                if (btn) {
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.style.backgroundColor = '';
+                    btn.className = 'w-full bg-carbone text-panna py-3 uppercase tracking-widest text-sm hover:bg-oro transition-colors relative overflow-hidden flex items-center justify-center';
+                    btn.disabled = false;
+                }
+
+                messageContainer.classList.add('opacity-0', 'translate-y-2');
                 setTimeout(() => {
-                    // Nascondi spunta e ripristina testo pulsante
-                    // Re-ottieni riferimenti perché Lucide potrebbe averli sostituiti
-                    const checkIcon = document.getElementById('booking-submit-check');
-                    const textSpan = document.getElementById('booking-submit-text');
-                    const btn = document.getElementById('booking-submit');
+                    messageContainer.classList.add('hidden');
+                    messageContainer.classList.remove('bg-green-50', 'border-green-200', 'text-green-800');
+                    messageIcon.classList.remove('text-green-500');
+                    bookingMessage.innerHTML = '';
+                }, 400); 
+            }, 4000);
 
-                    if (checkIcon) checkIcon.style.display = 'none';
-                    if (textSpan) textSpan.style.opacity = '1';
-
-                    // Reset stile pulsante (rimuovi verde, ripristina stile originale)
-                    if (btn) {
-                        btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                        btn.style.backgroundColor = '';
-                        btn.className = 'w-full bg-carbone text-panna py-3 uppercase tracking-widest text-sm hover:bg-oro transition-colors relative overflow-hidden flex items-center justify-center';
-                        btn.disabled = false;
-                    }
-
-                    // Nascondi e resetta il messaggio verde
-                    messageContainer.classList.add('opacity-0', 'translate-y-2');
-                    setTimeout(() => {
-                        messageContainer.classList.add('hidden');
-                        messageContainer.classList.remove('bg-green-50', 'border-green-200', 'text-green-800');
-                        messageIcon.classList.remove('text-green-500');
-                        bookingMessage.innerHTML = '';
-                    }, 400); // attesa per la transizione fade-out
-                }, 4000);
-
-            } else {
-                // Error state from server
-                submitText.style.opacity = '1';
-                submitBtn.disabled = false;
-
-                messageContainer.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
-                messageIcon.setAttribute('data-lucide', 'alert-circle');
-                messageIcon.classList.add('text-red-500');
-                messageIcon.classList.remove('text-green-500');
-                bookingMessage.innerHTML = `<b>Attenzione:</b><br>${data.error || 'Si è verificato un errore durante la prenotazione.'}`;
-            }
         } catch (err) {
-            // Network error state
             submitSpinner.style.display = 'none';
             submitText.style.opacity = '1';
             submitBtn.disabled = false;
 
             messageContainer.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
-            messageIcon.setAttribute('data-lucide', 'wifi-off');
+            messageIcon.setAttribute('data-lucide', 'alert-circle');
             messageIcon.classList.add('text-red-500');
             messageIcon.classList.remove('text-green-500');
-            bookingMessage.innerHTML = '<b>Errore di connessione:</b><br>Impossibile contattare il server. Riprova più tardi.';
+            bookingMessage.innerHTML = `<b>Attenzione:</b><br>${err.message || 'Si è verificato un errore durante la prenotazione.'}`;
         } finally {
             // Show message container with animation
             lucide.createIcons(); // Re-render icons for dynamic changes
@@ -497,22 +485,15 @@ if (adminLoginForm) {
         errorEl.classList.add('hidden');
 
         try {
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
-            });
-            const data = await res.json();
-
-            if (res.ok) {
-                adminToken = data.token;
+            if (password === 'admin123') {
+                adminToken = 'fake-jwt-token';
                 localStorage.setItem('adminToken', adminToken);
                 showDashboard();
             } else {
                 errorEl.classList.remove('hidden');
             }
         } catch (err) {
-            errorEl.textContent = 'Errore di connessione';
+            errorEl.textContent = 'Errore di sistema';
             errorEl.classList.remove('hidden');
         }
     });
@@ -530,23 +511,25 @@ async function loadAppointments() {
     if (!adminAppointmentsList) return;
     adminAppointmentsList.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Caricamento...</td></tr>';
     try {
-        const res = await fetch('/api/admin/appointments', {
-            headers: { 'Authorization': `Bearer ${adminToken}` }
-        });
-
-        if (res.status === 401) {
+        if (!adminToken) {
             adminLogoutBtn.click();
             return;
         }
 
-        const data = await res.json();
+        const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        
+        // Sort
+        allAppointments.sort((a, b) => {
+            if (a.date !== b.date) return a.date.localeCompare(b.date);
+            return a.time.localeCompare(b.time);
+        });
 
-        if (data.appointments.length === 0) {
+        if (allAppointments.length === 0) {
             adminAppointmentsList.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Nessun appuntamento trovato.</td></tr>';
             return;
         }
 
-        adminAppointmentsList.innerHTML = data.appointments.map(app => `
+        adminAppointmentsList.innerHTML = allAppointments.map(app => `
                     <tr class="hover:bg-gray-50">
                         <td class="p-4 text-sm">${app.date}</td>
                         <td class="p-4 text-sm font-medium">${app.time}</td>
@@ -567,17 +550,13 @@ async function loadAppointments() {
 window.deleteAppointment = async function (id) {
     if (!confirm('Sei sicuro di voler cancellare questo appuntamento?')) return;
     try {
-        const res = await fetch(`/api/admin/appointments/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${adminToken}` }
-        });
-        if (res.ok) {
-            loadAppointments();
-        } else {
-            alert('Errore durante la cancellazione');
-        }
+        let allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        allAppointments = allAppointments.filter(app => app.id !== id);
+        localStorage.setItem('appointments', JSON.stringify(allAppointments));
+        
+        loadAppointments();
     } catch (err) {
-        alert('Errore di connessione');
+        alert('Errore di sistema');
     }
 };
 
