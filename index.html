@@ -38,7 +38,13 @@
         }
     </script>
     <link href="./src/index.css" rel="stylesheet">
-
+    <style>
+        /* Previene il flash grigio o FOUC prima che Tailwind CDN sia pronto */
+        html, body {
+            background-color: #FCFBF9;
+            color: #18181b;
+        }
+    </style>
 </head>
 
 <body class="bg-panna text-carbone font-sans antialiased selection:bg-oro selection:text-white">
