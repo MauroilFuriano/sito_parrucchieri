@@ -7,3 +7,5 @@ coverage/
 .env*
 !.env.example
 appointments.db
+.originali/
+.taste-skill/
