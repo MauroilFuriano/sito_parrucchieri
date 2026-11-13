@@ -3,7 +3,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
-import { answerChat, parseChatRequest } from './api/_chat';
+import { answerChat, parseChatRequest } from './api/_chat.js';
 
 // Local server only: on Vercel the site is static and the chat runs as the function in api/chat.ts.
 const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('--prod');

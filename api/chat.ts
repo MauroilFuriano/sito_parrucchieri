@@ -1,4 +1,4 @@
-import { answerChat, parseChatRequest } from './_chat';
+import { answerChat, parseChatRequest } from './_chat.js';
 
 interface FunctionRequest {
   method?: string;

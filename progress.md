@@ -1,5 +1,11 @@
 # Diario
 
+## 2026-11-13 (notte, fix chat su Vercel)
+- Chat non funzionante in produzione: log Vercel `ERR_MODULE_NOT_FOUND: Cannot find module '/var/task/api/_chat'`. Il progetto è ESM (`"type": "module"`): Node richiede l'estensione negli import relativi. Corretto in `./_chat.js`, `../src/data/salon.js`, `./api/_chat.js`. Verificato compilando la funzione con tsc (module nodenext) e avviandola con Node puro: si carica, risponde 502 solo per chiave assente in locale.
+
+## 2026-11-13 (notte, pubblicazione)
+- Push su GitHub (main): commit 0698e74 (eliminazioni, fatto dall'utente) e 512126c (nuova versione completa). Vercel ricostruisce in automatico. Controllato prima del push: nessuna chiave nei file, file più grande il video hero (2,6 MB).
+
 ## 2026-11-13 (notte, prezzi)
 - Prezzi del listino sfalsati: la colonna `auto` condivideva la larghezza con il link nascosto "Prenota …" di lunghezza variabile. Ora colonna `minmax(9rem, max-content)`, prezzo e link allineati a destra (su mobile restano a sinistra sotto il nome). Misurati: bordi identici su tutti gli 8 prezzi a 1920, 1440 e 390 px.
 
@@ -21,7 +27,6 @@
 - Controllata tutta la storia git: Gemini/AI Studio non è mai stato chiamato dal codice (solo README, dipendenza `@google/genai` e define in vite.config.ts).
 - Chat collegata a Gemini: funzione Vercel `api/chat.ts` con modello `gemini-3.5-flash-lite` (scelto dalla pagina modelli ufficiale: Flash-Lite stabile consigliato per progetti nuovi; configurabile con GEMINI_MODEL). Prompt con listino, promozioni, orari e orari liberi inviati dal browser; risposta JSON (reply, bookService, openBooking). Fallback alle risposte preimpostate. Tolta da vite.config.ts la `define` che avrebbe messo la chiave nel bundle.
 - Testato: 400 su richiesta vuota, 502 senza chiave, fallback in pagina ok, nessun errore JS. Risposta reale di Gemini non testabile in locale (chiave solo su Vercel).
-- Niente commit/push ancora: in attesa di ok dell'utente.
 
 ## 2026-11-13 (notte) — v3 cinematica con GSAP
 - L'utente ha giudicato il sito "vecchio, stile anni 2000". Causa principale: design-taste-frontend vieta proprio gli effetti dei siti motion graphics.

@@ -26,6 +26,7 @@ Sito vetrina + prenotazione appuntamenti per un salone unisex (Roma). Frontend R
 - Area admin nella demo: password `admin123` lato client (dati solo nel browser di chi visita). Per un sito reale servirà un database (es. Neon/Supabase) e un'autenticazione vera.
 - Chat: risponde con Gemini tramite la funzione Vercel `api/chat.ts` (logica in `api/_chat.ts`, condivisa con `server.ts` per lo sviluppo locale). Variabili su Vercel: `GEMINI_API_KEY` (Secret) e opzionale `GEMINI_MODEL` (predefinito `gemini-3.5-flash-lite`). Se Gemini non risponde, la chat usa le risposte preimpostate in `Chat.tsx`. La chiave non deve mai finire nel codice del browser (niente `define` in vite.config.ts).
 - Niente recensioni, numeri o clienti inventati sulla pagina.
+- Negli import della cartella `api/` (e da `server.ts` verso `api/`) usare sempre l'estensione `.js`: su Vercel le funzioni girano come ESM puro e senza estensione vanno in ERR_MODULE_NOT_FOUND.
 - Mai animare con due timeline diverse la stessa proprietà dello stesso elemento (es. intro + scroll): usare elementi diversi (chars vs masks di SplitText) o fromTo espliciti.
 - Animazioni: GSAP dentro `useGSAP` con `scope` e `gsap.matchMedia()` (MOTION_OK/REDUCED da `lib/motion.ts`); con prefers-reduced-motion niente Lenis, pin o scrub. CSS solo per hover/focus. Un solo motore di scroll (Lenis).
 - Non usare la skill design-taste-frontend per questo sito: le sue regole (niente sfumature, ombre, corsivi, effetti) vanno contro lo stile motion graphics richiesto.

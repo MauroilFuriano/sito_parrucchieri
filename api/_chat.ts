@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { bookableServices, formatPrice, promotions, salon, serviceCategories } from '../src/data/salon';
+import { bookableServices, formatPrice, promotions, salon, serviceCategories } from '../src/data/salon.js';
 
 export interface ChatTurn {
   from: 'salon' | 'visitor';
